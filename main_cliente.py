@@ -52,7 +52,7 @@ while opcao != 0:
         if cliente_cadastrado == True:
             numero_conta = "0001"
             saldo = 0.0
-            print("Número da conta:\n", numero_conta, "Saldo:\n", saldo)
+            print("Número da conta:\n", numero_conta, "\nSaldo:\n", saldo)
             conta_criada = criar_conta(cliente_cadastrado)
         else:
             print("ERRO: Cadastre um cliente primeiro!")
