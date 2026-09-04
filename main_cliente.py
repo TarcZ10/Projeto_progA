@@ -28,7 +28,7 @@ opcao = -1
 #Inicializador do sistema
 while opcao != 0:
 
-    print("\n===== SISTEMA BANCÁRIO =====")
+    print("\n______ SISTEMA BANCÁRIO ______ ")
     print("1 - Cadastrar cliente")
     print("2 - Criar conta")
     print("3 - Consultar saldo")
