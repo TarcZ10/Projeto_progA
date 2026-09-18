@@ -1,22 +1,78 @@
 #Funções
 #Função que permite cadastrar o cliente:
-def cadastrar_cliente(nome,cpf,endereco,telefone):
-    if nome != "" and cpf != "" and endereco != "" and telefone != "":
+def cadastrar_cliente(clientes, nome,cpf,endereco,telefone):
+
+    for cliente in clientes:
+        if cliente['cpf'] == cpf:
+            print("ERRO: CPF já cadastrado!")
+            return False
+
+    if nome != "" and cpf != "" and endereco != "" and telefone != "":       
+        novo_cliente = {
+            "nome": nome,
+            "cpf": cpf,
+            "endereco": endereco,
+            "telefone": telefone
+        }
+        clientes.append(novo_cliente)
+
         print(f"Cliente {nome} adicionado com sucesso!")    
         return True
     else:
         print("ERRO: Todos os dados precisam estar preenchidos!")
         return False
 
-#Função que cria a conta recebendo o cliente cadastrado:
-def criar_conta(cliente_cadastrado):
-    if cliente_cadastrado == True:
-        print("Conta Criada!")
-        return True
+#Função que cria a conta e busca se já existe:
+def criar_conta(contas, clientes, cpf):
+    # 1. Verifica se já existe uma conta cadastrada para este CPF
+    for conta in contas:
+        if conta["cliente"]["cpf"] == cpf:
+            print(f"ERRO: O CPF {cpf} está indisponível!")
+            return False
 
+    # 2. Busca o cliente pelo CPF
+    cliente_encontrado = None
+    for c in clientes:
+        if c['cpf'] == cpf:
+            cliente_encontrado = c
+            break
+
+    # 3. Se não tinha conta, cria uma nova conta
+    if cliente_encontrado:
+        numero_conta = len(contas) + 1
+        nova_conta = {
+            "numero": numero_conta,
+            "cliente": cliente_encontrado,
+            "saldo": 0.0
+        }
+        contas.append(nova_conta)
+        print(f"\nConta #{numero_conta} criada com sucesso para {cliente_encontrado['nome']}!")
+        return True
     else:
-        print("ERRO: Cliente não cadastrado!")
+        print("ERRO: Cliente com este CPF não foi encontrado! Cadastre o cliente primeiro.")
         return False
+
+#Função que lista todas as contas cadastradas:
+def listar_contas(contas):
+    if len(contas) == 0:
+        print("\nNenhuma conta cadastrada ainda!")
+        return False
+
+    print("\n--- LISTA DE CONTAS ---")
+    for conta in contas:
+        print(f"Conta #{conta['numero']}")
+        print(f"  Cliente: {conta['cliente']['nome']}")
+        print(f"  CPF: {conta['cliente']['cpf']}")
+        print(f"  Saldo: R${conta['saldo']:.2f}")
+        print("-----------------------")
+    return True
+
+#Função que procura uma conta pelo número:
+def procurar_conta(contas, numero):
+    for conta in contas:
+        if conta["numero"] == numero:
+            return conta
+    return None
 
 #Função para realizar depósito
 def realizar_deposito(saldo):
@@ -42,12 +98,11 @@ def realizar_saque (saldo):
     else:
         print("Saldo indisponível")
     return saldo
+
 #DADOS PARA INICIAR O SISTEMA
+clientes = []
+contas = []
 opcao = -1
-cliente_cadastrado = False
-conta_criada = False
-saldo = 0.0
-valor_saque = 0.0
 
 #Inicializador do sistema
 while opcao != 0:
@@ -58,6 +113,8 @@ while opcao != 0:
     print("3 - Consultar saldo")
     print("4 - Depositar")
     print("5 - Sacar")
+    print("6 - Listar contas")
+    print("7 - Procurar conta pelo número")
     print("0 - Sair")
     
     opcao = int(input("Escolha uma opção:\n"))
@@ -70,21 +127,57 @@ while opcao != 0:
         telefone = input("Digite seu telefone: ")
         endereco = input("Digite seu endereço: ")
 
-        cliente_cadastrado = cadastrar_cliente(nome, cpf, telefone, endereco)
+        cliente_cadastrado = cadastrar_cliente(clientes, nome, cpf, endereco, telefone)
 
     elif opcao == 2:
-        if cliente_cadastrado == True:
-            numero_conta = "0001"
-            conta_criada = criar_conta(cliente_cadastrado)
-            print("Número da conta:\n", numero_conta, "\nSaldo:\n", saldo)
-        else:
-            print("ERRO: Cadastre um cliente primeiro!")
+        print("\n--- CRIAÇÃO DE CONTA ---")
+        cpf = input("Digite seu CPF: ")
+        criar_conta(contas, clientes, cpf)
 
     elif opcao == 3:
-         print(f"Saldo: R$ {saldo:.2f}")
+        print("\n--- CONSULTAR SALDO ---")
+        numero = int(input("Digite o número da conta: "))
+        conta_encontrada = procurar_conta(contas, numero)
+
+        if conta_encontrada != None:
+            print(f"Saldo: R$ {conta_encontrada['saldo']:.2f}")
+        else:
+            print("Conta não encontrada!")
 
     elif opcao == 4:
-        saldo = realizar_deposito(saldo)
+        print("\n--- DEPÓSITO ---")
+        numero = int(input("Digite o número da conta: "))
+        conta_encontrada = procurar_conta(contas, numero)
+
+        if conta_encontrada != None:
+            conta_encontrada["saldo"] = realizar_deposito(conta_encontrada["saldo"])
+        else:
+            print("Conta não encontrada!")
 
     elif opcao == 5:
-        saldo = realizar_saque(saldo)
+        print("\n--- SAQUE ---")
+        numero = int(input("Digite o número da conta: "))
+        conta_encontrada = procurar_conta(contas, numero)
+
+        if conta_encontrada != None:
+            conta_encontrada["saldo"] = realizar_saque(conta_encontrada["saldo"])
+        else:
+            print("Conta não encontrada!")
+
+    elif opcao == 6:
+        listar_contas(contas)
+
+    elif opcao == 7:
+        print("\n--- PROCURAR CONTA ---")
+        numero = int(input("Digite o número da conta: "))
+        conta_encontrada = procurar_conta(contas, numero)
+
+        if conta_encontrada != None:
+            print(f"\nConta #{conta_encontrada['numero']} encontrada!")
+            print(f"  Cliente: {conta_encontrada['cliente']['nome']}")
+            print(f"  CPF: {conta_encontrada['cliente']['cpf']}")
+            print(f"  Telefone: {conta_encontrada['cliente']['telefone']}")
+            print(f"  Endereço: {conta_encontrada['cliente']['endereco']}")
+            print(f"  Saldo: R${conta_encontrada['saldo']:.2f}")
+        else:
+            print("Conta não encontrada!")
