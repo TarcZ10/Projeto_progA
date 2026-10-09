@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Sacar</title>
+</head>
+
+<body>
+
+    <h1>Sacar</h1>
+
+    <form method="POST">
+
+        <input type="number" name="numero" placeholder="Número da conta"
+        >
+
+        <br><br>
+
+        <input type="number" step="0.01" name="valor" placeholder="Valor do saque">
+
+        <br><br>
+
+        <div style="text-align: center;">
+            <button type="submit">Sacar</button>
+        </div>
+
+    </form>
+
+    {% if sucesso == True %}
+
+        <h2>Saque realizado!</h2>
+
+        <p>
+            Conta:
+            {{ conta["numero"] }}
+        </p>
+
+        <p>
+            Cliente:
+            {{ conta["cliente"]["nome"] }}
+        </p>
+
+        <p>
+            Saldo atual:
+            R$ {{ conta["saldo"] }}
+        </p>
+
+    {% elif sucesso == False %}
+
+        <p>Não foi possível realizar o saque.</p>
+
+    {% endif %}
+
+    <br>
+
+    <div style="text-align: center;">
+        <a href="/">Voltar para a página inicial</a>
+    </div>
+
+</body>
+
+</html>

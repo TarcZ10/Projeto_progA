@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Procurar Conta</title>
+</head>
+
+<body>
+
+    <h1>Procurar Conta</h1>
+
+    <form method="POST">
+
+        <input
+            type="number"
+            name="numero"
+            placeholder="Número da conta"
+        >
+
+        <div style="text-align: center;">
+            <button type="submit">Procurar</button>
+        </div>
+
+    </form>
+
+    {% if conta %}
+
+        <h2>Conta encontrada</h2>
+
+        <p>
+            Número:
+            {{ conta["numero"] }}
+        </p>
+
+        <p>
+            Cliente:
+            {{ conta["cliente"]["nome"] }}
+        </p>
+
+        <p>
+            CPF:
+            {{ conta["cliente"]["cpf"] }}
+        </p>
+
+        <p>
+            Telefone:
+            {{ conta["cliente"]["telefone"] }}
+        </p>
+
+        <p>
+            Endereço:
+            {{ conta["cliente"]["endereco"] }}
+        </p>
+
+        <p>
+            Saldo:
+            R$ {{ conta["saldo"] }}
+        </p>
+
+    {% endif %}
+
+    <br>
+
+    <div style="text-align: center;">
+        <a href="/">Voltar para a página inicial</a>
+    </div>
+
+</body>
+
+</html>

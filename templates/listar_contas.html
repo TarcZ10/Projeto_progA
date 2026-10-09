@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Listar Contas</title>
+</head>
+
+<body>
+
+    <h1>Contas cadastradas</h1>
+
+    {% if contas %}
+
+        {% for conta in contas %}
+
+            <p>Número da conta: {{ conta["numero"] }}</p>
+            
+            <p>
+                Cliente:
+                {{ conta["cliente"]["nome"] }}
+            </p>
+
+            <p>
+                CPF:
+                {{ conta["cliente"]["cpf"] }}
+            </p>
+
+            <p>
+                Saldo:
+                R$ {{ conta["saldo"] }}
+            </p>
+
+            <hr>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>Nenhuma conta cadastrada.</p>
+
+    {% endif %}
+
+    <br>
+    <div style="text-align: center;">
+        <a href="/">Voltar para a página inicial</a>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Criar Conta</title>
+</head>
+
+<body>
+    <h1>Criar Conta</h1>
+
+    <form method="POST">
+
+        <input type="text" name="cpf" placeholder="CPF do cliente">
+        <br><br>
+        
+        <div style="text-align: center;">
+            <button type="submit">Criar conta</button>
+        </div>
+
+    </form>
+
+    <br>
+    {% if conta_criada %}
+
+    <h2>Conta criada com sucesso!</h2>
+
+    <p>Número da conta: {{ conta_criada["numero"] }}</p>
+
+    <p>
+        Cliente:
+        {{ conta_criada["cliente"]["nome"] }}
+    </p>
+
+    <p>
+        CPF:
+        {{ conta_criada["cliente"]["cpf"] }}
+    </p>
+
+    <p>
+        Saldo:
+        R$ {{ conta_criada["saldo"] }}
+    </p>
+
+    {% endif %}
+    
+    <br>
+    <div style="text-align: center;">
+        <a href="/">Voltar para a página inicial</a>
+    </div>
+
+</body>
+</html>
