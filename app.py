@@ -1,74 +1,53 @@
-#importa as ferramentas do Flask e as funções do banco.py
+#importa as ferramentas do Flask
 from flask import Flask, render_template, request, redirect, url_for
-from banco import clientes, contas, cadastrar_cliente, criar_conta, listar_contas, procurar_conta, realizar_deposito, realizar_saque
+from banco import Banco
 
 #inicia o servidor do site
+sistema_banco = Banco()
 app = Flask(__name__)
 
-@app.route("/") #pagina principal do site
+@app.route("/") 
 def iniciar():
-    return render_template("index.html") #exibe a tela index.html
+    return render_template("index.html") 
 
-#acesso da pag com o GET e envio dos dados POST
 @app.route("/cadastrar-cliente", methods=["GET","POST"])
 def cadastrar():
-        resultado = None
+    resultado = None
 
-        #envia os dados
-        if request.method == "POST":
-              nome = request.form["nome"]
-              cpf = request.form["cpf"]
-              endereco = request.form["endereco"]
-              telefone = request.form["telefone"]
+    if request.method == "POST":
+        nome = request.form["nome"]
+        cpf = request.form["cpf"]
+        endereco = request.form["endereco"]
+        telefone = request.form["telefone"]
+        salario = request.form["salario"]
 
-            #chama a função do banco.py e passa os dados
-              resultado = cadastrar_cliente(
-                    clientes, 
-                    nome, 
-                    cpf, 
-                    endereco, 
-                    telefone
-              )
+        # Chama a função de cadastro que está DENTRO do objeto sistema_banco
+        resultado = sistema_banco.cadastrar_cliente(nome, cpf, endereco, telefone, salario)
 
-        #print(clientes)
-        if resultado:
-            return redirect(url_for("iniciar"))
-        
-        # Se foi só um acesso ou erro, mostra a tela de cadastro
-        return render_template("cadastrar_cliente.html")
+    if resultado:
+        return redirect(url_for("iniciar"))
+    
+    return render_template("cadastrar_cliente.html")
 
 @app.route("/criar-conta", methods=["GET", "POST"])
 def criar():
-    conta_criada = None #variavel pra guardar a conta
+    conta_criada = None 
 
     if request.method == "POST":
-        cpf = request.form["cpf"] #pega o CPF digitado
+        cpf = request.form["cpf"] 
 
-        #chama o banco.py para criar a conta
-        resultado = criar_conta(
-            contas,
-            clientes,
-            cpf
-        )
-    #se retornou True, pega a ultima conta da lista
+        resultado = sistema_banco.criar_conta(cpf)
+        
         if resultado:
-            conta_criada = contas[-1]
-#passa a variável 'conta_criada' para o HTML mostrar na tela
-    return render_template(
-        "criar_conta.html",
-        conta_criada=conta_criada
-    )
+            conta_criada = sistema_banco.contas[-1]
+
+    return render_template("criar_conta_preview.html", conta_criada=conta_criada)
 
 @app.route("/listar-contas")
 def listar():
-    #pega a lista de contas do banco.py
-    contas_cadastradas = listar_contas(contas)
+    contas_cadastradas = sistema_banco.listar_contas()
 
-    #passa as contas para o html
-    return render_template(
-        "listar_contas.html",
-        contas=contas_cadastradas
-    )
+    return render_template("listar_contas_preview.html", contas=contas_cadastradas)
 
 @app.route("/consultar-saldo", methods=["GET", "POST"])
 def consultar_saldo():
@@ -76,47 +55,26 @@ def consultar_saldo():
 
     if request.method == "POST":
         numero = int(request.form["numero"])
-
-        conta_encontrada = procurar_conta(
-            contas,
-            numero
-        )
-    #não aparece nada caso não encontre a conta 
-    return render_template(
-        "consultar_saldo.html",
-        conta=conta_encontrada
-    )
+        conta_encontrada = sistema_banco.procurar_conta(numero)
+        
+    return render_template("consultar_saldo_preview.html", conta=conta_encontrada)
 
 @app.route("/depositar", methods=["GET", "POST"])
 def depositar():
     conta_encontrada = None
     sucesso = None
 
-    #converte os dados pra int e float
     if request.method == "POST":
         numero = int(request.form["numero"])
         valor = float(request.form["valor"])
 
-        #procura a conta pelo número
-        conta_encontrada = procurar_conta(contas, numero)
+        conta_encontrada = sistema_banco.procurar_conta(numero)
 
-        #se achou a conta
         if conta_encontrada is not None:
-            #chama a função de deposito e devolve se deu certo e o novo valor
-            sucesso, novo_saldo = realizar_deposito(
-                conta_encontrada["saldo"],
-                valor
-            )
-            #se passou, atualiza na conta o novo saldo
-            if sucesso:
-                conta_encontrada["saldo"] = novo_saldo
+            # Em POO, o depósito é uma ação DA CONTA. Portanto, chamamos a função a partir da conta encontrada!
+            sucesso, novo_saldo = conta_encontrada.realizar_deposito(valor)
 
-    #retorna para a tela se deu sucesso e qual foi a conta movimentada
-    return render_template(
-        "deposito.html",
-        conta=conta_encontrada,
-        sucesso=sucesso
-    )
+    return render_template("deposito_preview.html", conta=conta_encontrada, sucesso=sucesso)
 
 @app.route("/sacar", methods=["GET", "POST"])
 def sacar():
@@ -127,22 +85,13 @@ def sacar():
         numero = int(request.form["numero"])
         valor = float(request.form["valor"])
 
-        conta_encontrada = procurar_conta(contas, numero)
+        conta_encontrada = sistema_banco.procurar_conta(numero)
 
         if conta_encontrada is not None:
-            sucesso, novo_saldo = realizar_saque(
-                conta_encontrada["saldo"],
-                valor
-            )
+            # O mesmo para o saque: a ação pertence ao objeto da conta.
+            sucesso, novo_saldo = conta_encontrada.realizar_saque(valor)
 
-            if sucesso:
-                conta_encontrada["saldo"] = novo_saldo
-
-    return render_template(
-        "saque.html",
-        conta=conta_encontrada,
-        sucesso=sucesso
-    )
+    return render_template("saque_preview.html", conta=conta_encontrada, sucesso=sucesso)
 
 @app.route("/procurar-conta", methods=["GET", "POST"])
 def procurar():
@@ -150,13 +99,6 @@ def procurar():
 
     if request.method == "POST":
         numero = int(request.form["numero"])
+        conta_encontrada = sistema_banco.procurar_conta(numero)
 
-        conta_encontrada = procurar_conta(
-            contas,
-            numero
-        )
-
-    return render_template(
-        "procurar_conta.html",
-        conta=conta_encontrada
-    )
+    return render_template("procurar_conta_preview.html", conta=conta_encontrada)
