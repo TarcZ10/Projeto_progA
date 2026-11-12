@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transferir</title>
+</head>
+
+<body>
+    <h1>Transferir</h1>
+
+    <form method="POST">
+        <input type="number" name="numero_origem" placeholder="Conta de origem" required>
+        <br><br>
+        <input type="number" name="numero_destino" placeholder="Conta de destino" required>
+        <br><br>
+        <input type="number" step="0.01" name="valor" placeholder="Valor da transferência" required>
+        <br><br>
+        <button type="submit">Transferir</button>
+    </form>
+
+    {% if sucesso == True %}
+        <h2>Transferência realizada!</h2>
+        <p>Conta de origem: {{ conta_origem.numero }} ({{ conta_origem.cliente.nome }})</p>
+        <p>Novo saldo da origem: R$ {{ conta_origem.saldo }}</p>
+        <p>Conta de destino: {{ conta_destino.numero }} ({{ conta_destino.cliente.nome }})</p>
+    {% elif sucesso == False %}
+        <p>Não foi possível realizar a transferência. Verifique os números das contas e o saldo.</p>
+    {% endif %}
+
+    <br>
+    <a href="/">Voltar para a página inicial</a>
+</body>
+</html>

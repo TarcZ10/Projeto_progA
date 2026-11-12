@@ -1,70 +1,41 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Procurar Conta</title>
 </head>
 
 <body>
-
     <h1>Procurar Conta</h1>
 
     <form method="POST">
-
-        <input
-            type="number"
-            name="numero"
-            placeholder="Número da conta"
-        >
-
-        <button type="submit">
-            Procurar
-        </button>
-
-
+        <input type="number" name="numero" placeholder="Número da conta">
+        <button type="submit">Procurar</button>
     </form>
 
     {% if conta %}
-
         <h2>Conta encontrada</h2>
-
-        <p>
-            Número:
-            {{ conta["numero"] }}
-        </p>
-
-        <p>
-            Cliente:
-            {{ conta["cliente"]["nome"] }}
-        </p>
-
-        <p>
-            CPF:
-            {{ conta["cliente"]["cpf"] }}
-        </p>
-
-        <p>
-            Telefone:
-            {{ conta["cliente"]["telefone"] }}
-        </p>
-
-        <p>
-            Endereço:
-            {{ conta["cliente"]["endereco"] }}
-        </p>
-
-        <p>
-            Saldo:
-            R$ {{ conta["saldo"] }}
-        </p>
-
+        <p>Número: {{ conta.numero }}</p>
+        <p>Tipo: {{ conta.tipo }}</p>
+        
+        <h3>Dados do Titular</h3>
+        <p>Cliente: {{ conta.cliente.nome }}</p>
+        <p>CPF: {{ conta.cliente.cpf }}</p>
+        <p>Telefone: {{ conta.cliente.telefone }}</p>
+        
+        <h3>Financeiro</h3>
+        <p>Saldo: R$ {{ conta.saldo }}</p>
+        
+        <h3>Histórico de Transações</h3>
+        <ul>
+            {% for transacao in conta.historico_transacoes %}
+                <li>{{ transacao }}</li>
+            {% else %}
+                <li>Nenhuma transação realizada.</li>
+            {% endfor %}
+        </ul>
     {% endif %}
 
     <br>
-
-    <a href="/">
-        Voltar para a página inicial
-    </a>
+    <a href="/">Voltar para a página inicial</a>
 </body>
-
 </html>

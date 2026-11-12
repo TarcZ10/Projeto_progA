@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Patrimônio da Agência</title>
+</head>
+
+<body>
+    <h1>{{ agencia.nome }} (Nº {{ agencia.numero }})</h1>
+
+    <p>Total de contas cadastradas: {{ agencia.contas | length }}</p>
+    <p><strong>Patrimônio Total: R$ {{ total }}</strong></p>
+
+    <br>
+    <a href="/">Voltar para a página inicial</a>
+</body>
+</html>

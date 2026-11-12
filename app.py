@@ -1,14 +1,19 @@
-#importa as ferramentas do Flask
 from flask import Flask, render_template, request, redirect, url_for
-from banco import Banco
+from agencia import Agencia
+from cliente import Cliente
+from conta import Conta
 
-#inicia o servidor do site
-sistema_banco = Banco()
 app = Flask(__name__)
+
+#Agência Única
+agencia_001 = Agencia("Agência 001", "001")
+
+# Lista geral de clientes
+clientes = [] 
 
 @app.route("/") 
 def iniciar():
-    return render_template("index.html") 
+    return render_template("index.html")
 
 @app.route("/cadastrar-cliente", methods=["GET","POST"])
 def cadastrar():
@@ -17,12 +22,15 @@ def cadastrar():
     if request.method == "POST":
         nome = request.form["nome"]
         cpf = request.form["cpf"]
-        endereco = request.form["endereco"]
         telefone = request.form["telefone"]
         salario = request.form["salario"]
 
-        # Chama a função de cadastro que está DENTRO do objeto sistema_banco
-        resultado = sistema_banco.cadastrar_cliente(nome, cpf, endereco, telefone, salario)
+        # Validação se o cliente já existe e criação
+        cpf_existe = any(c.cpf == cpf for c in clientes)
+        if not cpf_existe and nome != "" and cpf != "" and telefone != "" and salario != "":
+            novo_cliente = Cliente(nome, cpf, telefone, salario)
+            clientes.append(novo_cliente)
+            resultado = True
 
     if resultado:
         return redirect(url_for("iniciar"))
@@ -35,70 +43,107 @@ def criar():
 
     if request.method == "POST":
         cpf = request.form["cpf"] 
+        # Como o HTML ainda não tem esse campo, definimos 'Corrente' como padrão
+        tipo = request.form.get("tipo", "Corrente") 
 
-        resultado = sistema_banco.criar_conta(cpf)
-        
-        if resultado:
-            conta_criada = sistema_banco.contas[-1]
+        # Busca o cliente pelo CPF
+        cliente_encontrado = next((c for c in clientes if c.cpf == cpf), None)
 
-    return render_template("criar_conta_preview.html", conta_criada=conta_criada)
+        if cliente_encontrado:
+            numero_conta = len(agencia_001.contas) + 1
+            
+            # REGRA II: A conta recebe APENAS 1 cliente (Titularidade)
+            nova_conta = Conta(numero_conta, cliente_encontrado, tipo)
+            
+            # REGRA III: Múltiplas Contas. A trava que bloqueava CPFs repetidos 
+            # foi removida. O cliente pode criar quantas quiser.
+            agencia_001.adicionar_conta(nova_conta)
+            conta_criada = nova_conta
+
+    return render_template("criar_conta.html", conta_criada=conta_criada)
 
 @app.route("/listar-contas")
 def listar():
-    contas_cadastradas = sistema_banco.listar_contas()
-
-    return render_template("listar_contas_preview.html", contas=contas_cadastradas)
+    contas_cadastradas = agencia_001.contas if len(agencia_001.contas) > 0 else None
+    return render_template("listar_contas.html", contas=contas_cadastradas)
 
 @app.route("/consultar-saldo", methods=["GET", "POST"])
 def consultar_saldo():
     conta_encontrada = None
-
     if request.method == "POST":
         numero = int(request.form["numero"])
-        conta_encontrada = sistema_banco.procurar_conta(numero)
+        conta_encontrada = agencia_001.buscar_conta(numero)
         
-    return render_template("consultar_saldo_preview.html", conta=conta_encontrada)
+    return render_template("consultar_saldo.html", conta=conta_encontrada)
 
 @app.route("/depositar", methods=["GET", "POST"])
 def depositar():
     conta_encontrada = None
     sucesso = None
-
     if request.method == "POST":
         numero = int(request.form["numero"])
         valor = float(request.form["valor"])
-
-        conta_encontrada = sistema_banco.procurar_conta(numero)
+        conta_encontrada = agencia_001.buscar_conta(numero)
 
         if conta_encontrada is not None:
-            # Em POO, o depósito é uma ação DA CONTA. Portanto, chamamos a função a partir da conta encontrada!
-            sucesso, novo_saldo = conta_encontrada.realizar_deposito(valor)
+            sucesso, novo_saldo = conta_encontrada.depositar(valor)
 
-    return render_template("deposito_preview.html", conta=conta_encontrada, sucesso=sucesso)
+    return render_template("deposito.html", conta=conta_encontrada, sucesso=sucesso)
 
 @app.route("/sacar", methods=["GET", "POST"])
 def sacar():
     conta_encontrada = None
     sucesso = None
-
     if request.method == "POST":
         numero = int(request.form["numero"])
         valor = float(request.form["valor"])
-
-        conta_encontrada = sistema_banco.procurar_conta(numero)
+        conta_encontrada = agencia_001.buscar_conta(numero)
 
         if conta_encontrada is not None:
-            # O mesmo para o saque: a ação pertence ao objeto da conta.
-            sucesso, novo_saldo = conta_encontrada.realizar_saque(valor)
+            sucesso, novo_saldo = conta_encontrada.sacar(valor)
 
-    return render_template("saque_preview.html", conta=conta_encontrada, sucesso=sucesso)
+    return render_template("saque.html", conta=conta_encontrada, sucesso=sucesso)
 
 @app.route("/procurar-conta", methods=["GET", "POST"])
 def procurar():
     conta_encontrada = None
-
     if request.method == "POST":
         numero = int(request.form["numero"])
-        conta_encontrada = sistema_banco.procurar_conta(numero)
+        conta_encontrada = agencia_001.buscar_conta(numero)
 
-    return render_template("procurar_conta_preview.html", conta=conta_encontrada)
+    return render_template("procurar_conta.html", conta=conta_encontrada)
+
+@app.route("/transferir", methods=["GET", "POST"])
+def transferir():
+    conta_origem = None
+    conta_destino = None
+    sucesso = None
+
+    if request.method == "POST":
+        numero_origem = int(request.form["numero_origem"])
+        numero_destino = int(request.form["numero_destino"])
+        valor = float(request.form["valor"])
+
+        conta_origem = agencia_001.buscar_conta(numero_origem)
+        conta_destino = agencia_001.buscar_conta(numero_destino)
+
+        if conta_origem is not None and conta_destino is not None and conta_origem.numero != conta_destino.numero:
+            sucesso = conta_origem.transferir(valor, conta_destino)
+        else:
+            sucesso = False
+
+    return render_template(
+        "transferir.html",
+        conta_origem=conta_origem,
+        conta_destino=conta_destino,
+        sucesso=sucesso
+    )
+
+@app.route("/patrimonio")
+def patrimonio():
+    total = agencia_001.calcular_patrimonio_total()
+    return render_template(
+        "patrimonio.html",
+        agencia=agencia_001,
+        total=total
+    )

@@ -1,10 +1,10 @@
-from cliente import Cliente
-
 class Conta:
-    def __init__(self, numero, cliente):
+    def __init__(self, numero, cliente, tipo):
         self._numero = numero
         self._cliente = cliente
+        self._tipo = tipo  # Ex: "Corrente" ou "Poupança"
         self._saldo = 0.0
+        self._historico_transacoes = []
 
     @property
     def numero(self):
@@ -15,21 +15,37 @@ class Conta:
         return self._cliente
 
     @property
+    def tipo(self):
+        return self._tipo
+
+    @property
     def saldo(self):
         return self._saldo
 
-    # Os métodos de saque e depósito agora pertencem à Conta.
-    # Eles acessam o próprio saldo através de "self._saldo"
-    def realizar_deposito(self, valor):
+    @property
+    def historico_transacoes(self):
+        return self._historico_transacoes
+
+    def depositar(self, valor):
         if valor > 0:  
             self._saldo = self._saldo + valor
-        else:
-            return False, self._saldo 
-        return True, self._saldo 
+            self._historico_transacoes.append(f"Depósito: R$ {valor}")
+            return True, self._saldo 
+        return False, self._saldo 
 
-    def realizar_saque(self, valor_saque):
+    def sacar(self, valor_saque):
         if valor_saque <= 0 or valor_saque > self._saldo: 
             return False, self._saldo 
         elif self._saldo >= valor_saque:
             self._saldo = self._saldo - valor_saque 
-        return True, self._saldo 
+            self._historico_transacoes.append(f"Saque: R$ {valor_saque}")
+            return True, self._saldo 
+
+    def transferir(self, valor, conta_destino):
+        if valor > 0 and self._saldo >= valor:
+            self._saldo -= valor
+            conta_destino._saldo += valor
+            self._historico_transacoes.append(f"Transferência enviada: R$ {valor} para conta {conta_destino.numero}")
+            conta_destino.historico_transacoes.append(f"Transferência recebida: R$ {valor} da conta {self.numero}")
+            return True
+        return False
