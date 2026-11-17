@@ -1,8 +1,7 @@
-class Conta:
-    def __init__(self, numero, cliente, tipo):
+class Conta():
+    def __init__(self, numero, cliente):
         self._numero = numero
         self._cliente = cliente
-        self._tipo = tipo  # Ex: "Corrente" ou "Poupança"
         self._saldo = 0.0
         self._historico_transacoes = []
 
@@ -16,7 +15,7 @@ class Conta:
 
     @property
     def tipo(self):
-        return self._tipo
+        pass
 
     @property
     def saldo(self):
@@ -25,6 +24,9 @@ class Conta:
     @property
     def historico_transacoes(self):
         return self._historico_transacoes
+
+    def exibir_historico_saldo(self):
+        return self.saldo, self.historico_transacoes
 
     def depositar(self, valor):
         if valor > 0:  

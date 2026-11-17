@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 from agencia import Agencia
 from cliente import Cliente
-from conta import Conta
+from corrente import ContaCorrente
+from poupanca import ContaPoupanca
 
 app = Flask(__name__)
 
@@ -43,17 +44,19 @@ def criar():
 
     if request.method == "POST":
         cpf = request.form["cpf"] 
-        # Como o HTML ainda não tem esse campo, definimos 'Corrente' como padrão
         tipo = request.form.get("tipo", "Corrente") 
 
         # Busca o cliente pelo CPF
         cliente_encontrado = next((c for c in clientes if c.cpf == cpf), None)
 
-        if cliente_encontrado:
+        if cliente_encontrado and tipo in ("Corrente", "Poupança"):
             numero_conta = len(agencia_001.contas) + 1
             
             # REGRA II: A conta recebe APENAS 1 cliente (Titularidade)
-            nova_conta = Conta(numero_conta, cliente_encontrado, tipo)
+            if tipo == "Corrente":
+                nova_conta = ContaCorrente(numero_conta, cliente_encontrado)
+            else:
+                nova_conta = ContaPoupanca(numero_conta, cliente_encontrado)
             
             # REGRA III: Múltiplas Contas. A trava que bloqueava CPFs repetidos 
             # foi removida. O cliente pode criar quantas quiser.
