@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Listar Clientes</title>
+</head>
+
+<body>
+    <h1>Clientes cadastrados</h1>
+
+    {% if lista_clientes %}
+        {% for item in lista_clientes %}
+            <p>Nome: {{ item.cliente.nome }}</p>
+            <p>CPF: {{ item.cliente.cpf }}</p>
+            <p>Telefone: {{ item.cliente.telefone }}</p>
+            <p>Salário: R$ {{ item.cliente.salario }}</p>
+
+            <p>Contas vinculadas:</p>
+            {% if item.contas %}
+                <ul>
+                    {% for conta in item.contas %}
+                        <li>Conta nº {{ conta.numero }} ({{ conta.tipo }}) - Saldo: R$ {{ conta.saldo }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Nenhuma conta cadastrada para este CPF.</p>
+            {% endif %}
+
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>Nenhum cliente cadastrado.</p>
+    {% endif %}
+
+    <a href="/">Voltar para a página inicial</a>
+</body>
+</html>

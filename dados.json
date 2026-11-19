@@ -1,0 +1,86 @@
+{
+    "clientes": [
+        {
+            "nome": "Jonathas Santos",
+            "cpf": "118",
+            "telefone": "79",
+            "salario": 1620.0
+        },
+        {
+            "nome": "Tarcísio",
+            "cpf": "111",
+            "telefone": "79",
+            "salario": 200.0
+        }
+    ],
+    "agencia": {
+        "nome": "Agência 001",
+        "numero": "001",
+        "contas": [
+            {
+                "numero": 1,
+                "saldo": 750.0,
+                "tipo": "Corrente",
+                "titular_cpf": "118",
+                "historico_transacoes": [
+                    {
+                        "tipo": "Depósito",
+                        "valor": 500.0,
+                        "conta_relacionada": null
+                    },
+                    {
+                        "tipo": "Transferência recebida",
+                        "valor": 250.0,
+                        "conta_relacionada": 3
+                    }
+                ]
+            },
+            {
+                "numero": 2,
+                "saldo": 750.0,
+                "tipo": "Poupança",
+                "titular_cpf": "111",
+                "historico_transacoes": [
+                    {
+                        "tipo": "Transferência recebida",
+                        "valor": 500.0,
+                        "conta_relacionada": 3
+                    },
+                    {
+                        "tipo": "Depósito",
+                        "valor": 500.0,
+                        "conta_relacionada": null
+                    },
+                    {
+                        "tipo": "Saque",
+                        "valor": 250.0,
+                        "conta_relacionada": null
+                    }
+                ]
+            },
+            {
+                "numero": 3,
+                "saldo": 750.0,
+                "tipo": "Corrente",
+                "titular_cpf": "111",
+                "historico_transacoes": [
+                    {
+                        "tipo": "Depósito",
+                        "valor": 1500.0,
+                        "conta_relacionada": null
+                    },
+                    {
+                        "tipo": "Transferência enviada",
+                        "valor": 500.0,
+                        "conta_relacionada": 2
+                    },
+                    {
+                        "tipo": "Transferência enviada",
+                        "valor": 250.0,
+                        "conta_relacionada": 1
+                    }
+                ]
+            }
+        ]
+    }
+}

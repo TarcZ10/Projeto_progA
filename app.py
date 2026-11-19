@@ -1,16 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
-from agencia import Agencia
 from cliente import Cliente
 from corrente import ContaCorrente
 from poupanca import ContaPoupanca
+from persistencia import salvar_dados, carregar_dados
 
 app = Flask(__name__)
 
-#Agência Única
-agencia_001 = Agencia("Agência 001", "001")
-
-# Lista geral de clientes
-clientes = [] 
+agencia_001, clientes = carregar_dados()
 
 @app.route("/") 
 def iniciar():
@@ -31,6 +27,7 @@ def cadastrar():
         if not cpf_existe and nome != "" and cpf != "" and telefone != "" and salario != "":
             novo_cliente = Cliente(nome, cpf, telefone, salario)
             clientes.append(novo_cliente)
+            salvar_dados(agencia_001, clientes)
             resultado = True
 
     if resultado:
@@ -52,15 +49,13 @@ def criar():
         if cliente_encontrado and tipo in ("Corrente", "Poupança"):
             numero_conta = len(agencia_001.contas) + 1
             
-            # REGRA II: A conta recebe APENAS 1 cliente (Titularidade)
             if tipo == "Corrente":
                 nova_conta = ContaCorrente(numero_conta, cliente_encontrado)
             else:
                 nova_conta = ContaPoupanca(numero_conta, cliente_encontrado)
             
-            # REGRA III: Múltiplas Contas. A trava que bloqueava CPFs repetidos 
-            # foi removida. O cliente pode criar quantas quiser.
             agencia_001.adicionar_conta(nova_conta)
+            salvar_dados(agencia_001, clientes)
             conta_criada = nova_conta
 
     return render_template("criar_conta.html", conta_criada=conta_criada)
@@ -69,6 +64,23 @@ def criar():
 def listar():
     contas_cadastradas = agencia_001.contas if len(agencia_001.contas) > 0 else None
     return render_template("listar_contas.html", contas=contas_cadastradas)
+
+@app.route("/listar-clientes")
+def listar_clientes():
+    lista_clientes = []
+
+    for cliente in clientes:
+        contas_do_cliente = []
+        for conta in agencia_001.contas:
+            if conta.cliente.cpf == cliente.cpf:
+                contas_do_cliente.append(conta)
+
+        lista_clientes.append({
+            "cliente": cliente,
+            "contas": contas_do_cliente
+        })
+
+    return render_template("listar_clientes.html", lista_clientes=lista_clientes)
 
 @app.route("/consultar-saldo", methods=["GET", "POST"])
 def consultar_saldo():
@@ -91,6 +103,9 @@ def depositar():
         if conta_encontrada is not None:
             sucesso, novo_saldo = conta_encontrada.depositar(valor)
 
+            if sucesso:
+                salvar_dados(agencia_001, clientes)
+
     return render_template("deposito.html", conta=conta_encontrada, sucesso=sucesso)
 
 @app.route("/sacar", methods=["GET", "POST"])
@@ -102,8 +117,11 @@ def sacar():
         valor = float(request.form["valor"])
         conta_encontrada = agencia_001.buscar_conta(numero)
 
-        if conta_encontrada is not None:
-            sucesso, novo_saldo = conta_encontrada.sacar(valor)
+    if conta_encontrada is not None:
+        sucesso, novo_saldo = conta_encontrada.sacar(valor)
+
+        if sucesso:
+            salvar_dados(agencia_001, clientes)
 
     return render_template("saque.html", conta=conta_encontrada, sucesso=sucesso)
 
@@ -132,6 +150,9 @@ def transferir():
 
         if conta_origem is not None and conta_destino is not None and conta_origem.numero != conta_destino.numero:
             sucesso = conta_origem.transferir(valor, conta_destino)
+
+            if sucesso:
+                salvar_dados(agencia_001, clientes)
         else:
             sucesso = False
 

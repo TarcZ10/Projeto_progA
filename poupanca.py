@@ -1,4 +1,5 @@
 from conta import Conta
+from transacao import Transacao
 
 class ContaPoupanca(Conta):
     def __init__(self, numero, cliente):
@@ -12,5 +13,9 @@ class ContaPoupanca(Conta):
     def aplicar_rendimento(self):
         rendimento = self._saldo * self.__taxa_rendimento
         self._saldo += rendimento
-        self._historico_transacoes.append(f"Rendimento: R$ {rendimento}")
+
+        transacao = Transacao("Rendimento",rendimento)
+
+        self._historico_transacoes.append(transacao)
+
         return True, self._saldo
